@@ -1,0 +1,375 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<title>Vizualizace dat 2014</title>
+	<script type="text/javascript" src="d3/d3.js"></script>
+</head>
+
+<style>
+	#column {
+		position: absolute;
+		width: 150px;
+		top: 0px;
+		left: 0px;
+		border-width: 1px
+	}
+
+	#main {
+		position: absolute;
+		width: 1130px;
+		top: 0px;
+		left: 150px;
+		border-width: 1px
+	}
+</style>
+
+<body>
+
+	<div id="column"></div>
+	<div id="main"></div>
+
+<script type="text/javascript">
+	var dataset;
+	d3.csv("decka.csv", function(error, data) {
+	if (error) {
+		console.log(error);
+	} else {
+		console.log(data);
+		dataset = data;
+
+		var buttonwidth = 150;
+		var width = 1130;
+		var height = 539;
+		var bodyMax = 220;
+		var bodyAbs = 155;
+		var lineOpac = 0.2;
+		var fillOpac = 0.1;
+		var textOpac = 0.2;
+		var fullLineOpac = 1;
+		var fullFillOpac = 0.9;
+		var fullTextOpac = 1;
+		var roadWidth = 1;
+
+		var svgmain = d3.select("#main")
+			.append("svg")
+			.attr("width", width)
+			.attr("height", height);
+
+		var svgcolumn = d3.select("#column")
+			.append("svg")
+			.attr("width", buttonwidth)
+			.attr("height", height);
+
+// Minard na pozadí
+		svgmain.append("defs")
+	         .append("pattern")
+	         .attr("id", "bg")
+	       	 .attr("patternUnits", "userSpaceOnUse")
+	         .attr("width", width)
+	         .attr("height", height)
+	         .append("image")
+	         .attr("xlink:href", "minard.png")
+	         .attr("width", width)
+	         .attr("height", height);
+
+		svgmain.append("rect")
+	   		 .attr("fill", "url(#bg)")
+	 		 .attr("width", width)
+	         .attr("height", height);
+
+     	var toggleStudent = function(d, i) {
+     		// listener na čudlíkách
+     		var targetClass = "student-" + i;
+     		var group = d3.selectAll("g." + targetClass);
+     		if(!d.selected) {
+     			group.selectAll("rect")
+	     			.transition()
+	   				.attr("fill", "#999999");
+   				group.selectAll("#column text")
+   					.transition()
+   					.attr("fill", "white");
+   				group.selectAll("path")
+   					.transition()
+   					.attr("stroke-width", 2*roadWidth)
+   					.attr("stroke", function(d) {
+		            	if (d.body < bodyAbs) {
+		            		return "rgba(163,0,0," + fullLineOpac + ")";
+		            		} else {
+		            			return "rgba(46,138,46," + fullLineOpac + ")";
+							}
+						})
+   				group.selectAll("circle")
+   					.transition()
+   					.attr("r", 20)
+					.attr("stroke", function(d) {
+		            	if (d.body < bodyAbs) {
+		            		return "rgba(163,0,0," + fullLineOpac + ")";
+		            		} else {
+		            			return "rgba(46,138,46," + fullLineOpac + ")";
+							}
+						})
+					.attr("stroke-width", 2*roadWidth)
+		            .attr("fill", function(d) {
+		            	if (d.body < bodyAbs) {
+		            		return "rgba(163,0,0," + fullFillOpac + ")";
+		            		} else {
+		            			return "rgba(46,138,46," + fullFillOpac + ")";
+							}
+						})
+		        group.selectAll("#main text")
+		        	.transition()
+   					.style("font-size", "16")
+   					.attr("fill", function(d) {
+		            	if (d.body < bodyAbs) {
+		            		return "rgba(255,255,255," + fullTextOpac + ")";
+		            		} else {
+		            			return "rgba(255,255,255," + fullTextOpac + ")";
+							}
+						})
+   				group.selectAll("#jmeno")
+		        	.transition()
+   					.style("font-size", "14")
+   					.attr("fill", function(d) {
+		            	if (d.body < bodyAbs) {
+		            		return "rgba(163,0,0," + fullTextOpac + ")";
+		            		} else {
+		            			return "rgba(46,138,46," + fullTextOpac + ")";
+							}
+						})
+     			d.selected = true;
+     		} else {
+     			group.selectAll("rect")
+	     			.transition()
+	   				.attr("fill", "#E6E6E6");
+   				group.selectAll("#column text")
+   					.transition()
+   					.attr("fill", "black");
+   				group.selectAll("path")
+   					.transition()
+   					.attr("stroke-width", roadWidth)
+   					.attr("stroke", function(d) {
+		            	if (d.body < bodyAbs) {
+		            		return "rgba(163,0,0," + lineOpac + ")";
+		            		} else {
+		            			return "rgba(46,138,46," + lineOpac + ")";
+							}
+						})
+   				group.selectAll("circle")
+   					.transition()
+   					.attr("r", 15)
+					.attr("stroke", function(d) {
+		            	if (d.body < bodyAbs) {
+		            		return "rgba(163,0,0," + lineOpac + ")";
+		            		} else {
+		            			return "rgba(46,138,46," + lineOpac + ")";
+							}
+						})
+					.attr("stroke-width", roadWidth)
+		            .attr("fill", function(d) {
+		            	if (d.body < bodyAbs) {
+		            		return "rgba(163,0,0," + fillOpac + ")";
+		            		} else {
+		            			return "rgba(46,138,46," + fillOpac + ")";
+							}
+						})
+		        group.selectAll("#main text")
+		        	.transition()
+   					.style("font-size", "11")
+   					.attr("fill", "rgba(255,255,255," + textOpac + ")");
+   				group.selectAll("#jmeno")
+		        	.transition()
+   					.style("font-size", "0");
+     			d.selected = false;
+     		}
+     	}
+
+// čudlíky
+		var button = svgcolumn.selectAll("button")
+			.data(dataset)
+			.enter()
+			.append("g")
+		   	.attr("class", function(d, i) { return "student student-" + i })
+		   	.on("click", toggleStudent)
+
+		button.append("rect")
+		   	.attr("x", 10)
+		   	.attr("y", function(d, i) {
+		   		return 21*i+3;
+		  	})
+		  	.attr("height", "20px")
+	    	.attr("width", "137px")
+	    	.attr("fill", "#E6E6E6")
+	    	.attr("stroke-width", "0.2px")
+	    	.attr("stroke", "#FFFFFF");
+
+		button.append("text")
+	   		.text(function(d) {
+	   			return d.jmeno;
+	   		})
+	   		.attr("x", 15)
+		   	.attr("y", function(d, i) {
+		   		return 21*i+17;
+		  	})
+		  	.attr("font-family", "Arial, Helvetica, sans-serif")
+		  	.attr("font-size", "70%")
+	    	.attr("font-weight", "bold");
+
+// cesta na Moskvu
+		var lineData = [];
+			for (var i = 0; i <= 24; i++) {
+				var newPath = [];
+					var randomness = Math.random()-0.5;
+					var newNumberX = Math.round(64 + randomness * 30)
+					var newNumberY = Math.round(276 + randomness * 90);
+					newPath[0] = {"x": newNumberX, "y": newNumberY};
+					newNumberY = Math.round((Math.random()-0.5) * 80)
+					newPath[1] = {"x": 113, "y": 258 + newNumberY};
+					newNumberY = Math.round((Math.random()-0.5) * 70)
+					newPath[2] = {"x": 210, "y": 274 + newNumberY};
+					newNumberY = Math.round((Math.random()-0.5) * 50)
+					newPath[3] = {"x": 377, "y": 228 + newNumberY};
+					newNumberY = Math.round((Math.random()-0.5) * 30)
+					newPath[4] = {"x": 546, "y": 209 + newNumberY};
+					newNumberY = Math.round((Math.random()-0.5) * 30)
+					newPath[5] = {"x": 679, "y": 254 + newNumberY};
+					newNumberY = Math.round((Math.random()-0.5) * 30)
+					newPath[6] = {"x": 792, "y": 216 + newNumberY};
+					newNumberY = Math.round((Math.random()-0.5) * 30)
+					newPath[7] = {"x": 893, "y": 126 + newNumberY};
+					newNumberY = Math.round((Math.random()-0.5) * 20)
+					newPath[8] = {"x": 975, "y": 142 + newNumberY};
+					newPath[9] = {"x": 1086, "y": 98};  // Moskva
+					newNumberY = Math.round((Math.random()-0.5) * 5)
+					newPath[10] = {"x": 1082, "y": 112 + newNumberY};
+					newNumberY = Math.round((Math.random()-0.5) * 20)
+					newPath[11] = {"x": 1075, "y": 170 + newNumberY};
+					newNumberY = Math.round((Math.random()-0.5) * 10)
+					newPath[12] = {"x": 1057, "y": 196 + newNumberY};
+					newNumberY = Math.round((Math.random()-0.5) * 10)
+					newPath[13] = {"x": 949, "y": 169 + newNumberY};
+					newNumberY = Math.round((Math.random()-0.5) * 5)
+					newPath[14] = {"x": 869, "y": 205 + newNumberY};
+					newNumberY = Math.round((Math.random()-0.5) * 5)
+					newPath[15] = {"x": 796, "y": 246 + newNumberY};
+					newNumberY = Math.round((Math.random()-0.5) * 2)
+					newPath[16] = {"x": 695, "y": 279 + newNumberY};
+					newNumberY = Math.round((Math.random()-0.5) * 2)
+					newPath[17] = {"x": 582, "y": 303 + newNumberY};
+					newNumberY = Math.round((Math.random()-0.5) * 2)
+					newPath[18] = {"x": 497, "y": 337 + newNumberY};
+					newNumberY = Math.round((Math.random()-0.5) * 2)
+					newPath[19] = {"x": 443, "y": 353 + newNumberY};
+					newNumberY = Math.round((Math.random()-0.5) * 2)
+					newPath[20] = {"x": 428, "y": 349};
+					newPath[21] = {"x": 363, "y": 310};
+					newPath[22] = {"x": 317, "y": 332};
+					newPath[23] = {"x": 279, "y": 321};
+					newPath[24] = {"x": 182, "y": 316};
+					newPath[25] = {"x": 76, "y": 320};
+					if (dataset[i].body <= bodyAbs) {  	// na Moskvu
+						newPath.length = Math.round(9*dataset[i].body/bodyAbs)+1;
+					} else {						// z Moskvy domů
+						newPath.length = 10 + Math.round(16*(dataset[i].body-bodyAbs)/(bodyMax-bodyAbs));
+					}
+				lineData.push(newPath);
+			}
+
+       	var lineFunction = d3.svg.line()
+       		.x(function(d) { return d.x; })
+            .y(function(d) { return d.y; })
+            .interpolate("cardinal");
+
+		var road = svgmain.selectAll("road")
+			.data(dataset)
+			.enter()
+			.append("g")
+			.attr("class", function(d, i) { return "student student-" + i })
+			.on("click", toggleStudent)
+
+		road.append("path")
+			.attr("d", function(d, i) {
+				return lineFunction(lineData[i]);
+			})
+			.attr("stroke", function(d) {
+            	if (d.body < bodyAbs) {
+            		return "rgba(163,0,0," + lineOpac + ")";
+            		} else {
+            			return "rgba(46,138,46," + lineOpac + ")";
+					}
+        	})            
+            .attr("stroke-width", roadWidth)
+            .attr("fill", "none");
+
+        road.append("circle")
+        	.attr("cx", function(d, i) {
+	        	return lineData[i][lineData[i].length-1].x;
+	        })
+            .attr("cy", function(d, i) {
+	        	return lineData[i][lineData[i].length-1].y;
+	        })
+            .attr("r", 15)
+			.attr("stroke", function(d) {
+				if (d.body < bodyAbs) {
+            		return "rgba(163,0,0," + lineOpac + ")";
+            		} else {
+            			return "rgba(46,138,46," + lineOpac + ")";
+					}
+        	})
+			.attr("stroke-width", "roadWidth")
+            .attr("fill", function(d) {
+				if (d.body < bodyAbs) {
+            		return "rgba(163,0,0," + fillOpac + ")";
+            		} else {
+            			return "rgba(46,138,46," + fillOpac + ")";
+					}
+        	})
+
+        road.append("text")
+       		.text(function(d) {
+       			return(d.body);
+       		})
+       		.attr("x", function(d, i) {
+        		return lineData[i][lineData[i].length-1].x;
+	        })
+            .attr("y", function(d, i) {
+	        	return lineData[i][lineData[i].length-1].y+5;
+	        })
+			.attr("fill", "rgba(255,255,255," + textOpac + ")")
+            .style("font-family", "Arial, Helvetica, sans-serif")
+            .style("font-size", "11")
+            .style("font-weight", "bold")
+            .style("text-anchor", "middle");
+
+        road.append("text")
+       		.text(function(d) {
+       			return(d.jmeno);
+       		})
+       		.attr("x", function(d, i) {
+        		return lineData[i][lineData[i].length-1].x;
+	        })
+            .attr("y", function(d, i) {
+	        	return lineData[i][lineData[i].length-1].y-25;
+	        })
+	        .attr("fill", function(d) {
+				if (d.body < bodyAbs) {
+            		return "rgba(163,0,0," + textOpac + ")";
+            		} else {
+            			return "rgba(46,138,46," + textOpac + ")";
+					}
+        	})
+            .style("font-family", "Arial, Helvetica, sans-serif")
+            .style("font-size", "0")
+            .style("font-weight", "bold")
+            .style("text-anchor", "middle")
+            .attr("id", "jmeno")
+
+	}});
+
+</script>
+</body>
+
+</html>
+
+
